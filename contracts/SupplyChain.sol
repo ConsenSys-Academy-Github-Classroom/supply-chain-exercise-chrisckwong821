@@ -19,13 +19,17 @@ contract SupplyChain {
     State state;
     address payable seller;
     address payable buyer;
+ 
   }
   /* 
    * Events
    */
   event LogForSale(uint sku);
+
   event LogSold(uint sku);
+
   event LogShipped(uint sku);
+
   event LogReceived(uint sku);
   // <LogForSale event: sku arg>
 
@@ -99,10 +103,10 @@ contract SupplyChain {
     skuCount = 0;
   }
 
-  function addItem(string memory _name, uint _price) public payable returns (bool) {
+  function addItem(string memory _name, uint _price) public returns (bool) {
     // 1. Create a new item and put in array
     items[skuCount] = Item({
-      name: _name, sku:skuCount, price: _price, state: State.ForSale, seller: payable(msg.sender), buyer: payable(address(0))
+      name: _name, sku:skuCount, price: _price, state: State.ForSale, seller: msg.sender, buyer: address(0)
       });
     // 2. Increment the skuCount by one
     skuCount += 1;
@@ -137,9 +141,9 @@ contract SupplyChain {
   //    - check the value after the function is called to make 
   //      sure the buyer is refunded any excess ether sent. 
   // 6. call the event associated with this function!
-  function buyItem(uint sku) public payable forSale(sku) paidEnough(sku) checkValue(sku) {
+  function buyItem(uint sku) public payable forSale(sku) paidEnough(items[sku].price) checkValue(sku) {
     items[sku].seller.transfer(items[sku].price);
-    items[sku].buyer = payable(msg.sender);
+    items[sku].buyer = msg.sender;
     items[sku].state = State.Sold;
     emit LogSold(sku);
   }
